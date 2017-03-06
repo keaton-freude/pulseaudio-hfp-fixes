@@ -38,11 +38,14 @@ PA_MODULE_VERSION(PACKAGE_VERSION);
 PA_MODULE_LOAD_ONCE(true);
 PA_MODULE_USAGE(
     "headset=ofono|native|auto"
+    "autodetect_mtu=<boolean>"
+    "disable_profile_hfp=<don't register HFP, only HSP>"
 );
 
 static const char* const valid_modargs[] = {
     "headset",
     "autodetect_mtu",
+    "disable_profile_hfp",
     NULL
 };
 
@@ -53,6 +56,7 @@ struct userdata {
     pa_hook_slot *device_connection_changed_slot;
     pa_bluetooth_discovery *discovery;
     bool autodetect_mtu;
+    bool disable_profile_hfp;
 };
 
 static pa_hook_result_t device_connection_changed_cb(pa_bluetooth_discovery *y, const pa_bluetooth_device *d, struct userdata *u) {
@@ -135,6 +139,12 @@ int pa__init(pa_module *m) {
     u->core = m->core;
     u->autodetect_mtu = autodetect_mtu;
     u->loaded_device_paths = pa_hashmap_new(pa_idxset_string_hash_func, pa_idxset_string_compare_func);
+
+    u->disable_profile_hfp = false;
+    if (pa_modargs_get_value_boolean(ma, "disable_profile_hfp", &u->disable_profile_hfp) < 0) {
+        pa_log("disable_profile_hfp must be either true or false");
+        goto fail;
+    }
 
     if (!(u->discovery = pa_bluetooth_discovery_get(u->core, headset_backend)))
         goto fail;

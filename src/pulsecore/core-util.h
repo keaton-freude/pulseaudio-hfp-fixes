@@ -229,6 +229,13 @@ static inline bool pa_safe_streq(const char *a, const char *b) {
     return pa_streq(a, b);
 }
 
+/* see if the string b contains a as a prefix */
+static inline bool pa_strcont(const char *a, const char *b) {
+    if (a == NULL || b == NULL)
+	return a == b;
+    return !strncmp(a, b, strlen(a));
+}
+
 bool pa_str_in_list_spaces(const char *needle, const char *haystack);
 bool pa_str_in_list(const char *haystack, const char *delimiters, const char *needle);
 
